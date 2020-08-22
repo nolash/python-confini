@@ -129,13 +129,3 @@ def config_dir_from_environment():
     return os.environ.get('CIC_CONFIG_DIR')
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        sys.stderr.write('usage: config.py <config_dir>')
-        sys.exit(1)
-    c = Config(sys.argv[1])
-    c.process()
-    print(repr(c))
-    print(c)
-
-
