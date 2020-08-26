@@ -5,6 +5,7 @@ import sys
 import os
 import tempfile
 import configparser
+import re
 
 logg = logging.getLogger()
 
@@ -77,8 +78,10 @@ class Config:
         tmp = tempfile.NamedTemporaryFile(delete=False)
         tmpname = tmp.name
         for filename in os.listdir(self.dir):
-            if not '.ini' in filename:
+            if re.match(r'.+\.ini$', filename) == None:
+                logg.debug('skipping file {}'.format(filename))
                 continue
+            logg.info('reading file {}'.format(filename))
             f = open(os.path.join(self.dir, filename), 'rb')
             while 1:
                 data = f.read()
