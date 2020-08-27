@@ -10,6 +10,9 @@ setup(
         install_requires=[
             'python-gnupg>=0.4.6,<0.5.0',
         ],
+        packages=[
+            'confini',
+        ],
         scripts = [
             'scripts/parse.py',
             ],
