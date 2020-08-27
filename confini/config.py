@@ -115,7 +115,8 @@ class Config:
                     filename = os.path.join(self.dir, filename)
                 f = open(filename, 'rb')
                 logg.debug('decrypting entry {} in file {}'.format(k, f))
-                v = gpg.decrypt_file(f)
+                d = gpg.decrypt_file(f)
+                v =str(d)
                 f.close()
         return v
 
