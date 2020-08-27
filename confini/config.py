@@ -6,10 +6,17 @@ import os
 import tempfile
 import configparser
 import re
+import gnupg
 
 logg = logging.getLogger()
 
 current_config = None
+
+gpg = gnupg.GPG(
+    verbose=False,
+    use_agent=True,
+        )
+gpg.encoding = 'utf-8'
 
 
 def set_current(conf, description=''):
@@ -22,13 +29,14 @@ class Config:
 
     parser = configparser.ConfigParser(strict=True)
 
-    def __init__(self, config_dir):
+    def __init__(self, config_dir, decrypt=True):
         if not os.path.isdir(config_dir):
             raise OSError('{} is not a directory'.format(config_dir))
         self.dir = os.path.realpath(config_dir)
         self.required = {}
         self.censored = {}
         self.store = {}
+        self.decrypt = decrypt
 
 
     def add(self, value, constant_name):
@@ -97,8 +105,24 @@ class Config:
             set_current(self, description=self.dir)
 
 
+
+    def _decrypt(self, k, v):
+        if self.decrypt:
+            m = re.match(r'^\!gpg\((.*)\)', v)
+            if m != None:
+                filename = m.group(1)
+                if filename[0] != '/':
+                    filename = os.path.join(self.dir, filename)
+                f = open(filename, 'rb')
+                logg.debug('decrypting entry {} in file {}'.format(k, f))
+                v = gpg.decrypt_file(f)
+                f.close()
+        return v
+
+
     def get(self, k):
-        return self.store.get(k)
+        v = self.store.get(k)
+        return self._decrypt(k, v)
 
 
     def __str__(self):
