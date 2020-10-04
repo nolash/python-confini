@@ -126,6 +126,14 @@ class Config:
         return self._decrypt(k, v)
 
 
+    def true(self, k):
+        v = self.store.get(k)
+        d = self._decrypt(k, v)
+        if d.lower() not in ['true', 'false', '0', '1', 'on', 'off']:
+            raise ValueError('{} not a boolean value'.format(k))
+        return d.lower() in ['true', '1', 'on']
+
+
     def __str__(self):
         ls = []
         for k in self.store.keys():

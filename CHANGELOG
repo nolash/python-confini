@@ -1,2 +1,4 @@
-1.0.0
+0.1.1
+	- Add boolean lookup
+0.1.0
 	- Add gnupg support
