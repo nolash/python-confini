@@ -8,7 +8,7 @@ import configparser
 import re
 import gnupg
 
-logg = logging.getLogger()
+logg = logging.getLogger('confini')
 
 current_config = None
 
