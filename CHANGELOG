@@ -1,3 +1,5 @@
+0.2.0
+	- Add optional prefix string for environment overrides
 0.1.1
 	- Add boolean lookup
 0.1.0

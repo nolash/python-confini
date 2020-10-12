@@ -29,7 +29,7 @@ class Config:
 
     parser = configparser.ConfigParser(strict=True)
 
-    def __init__(self, config_dir, decrypt=True):
+    def __init__(self, config_dir, env_prefix=None, decrypt=True):
         if not os.path.isdir(config_dir):
             raise OSError('{} is not a directory'.format(config_dir))
         self.dir = os.path.realpath(config_dir)
@@ -37,6 +37,10 @@ class Config:
         self.censored = {}
         self.store = {}
         self.decrypt = decrypt
+        self.env_prefix = None
+        if env_prefix != None:
+            logg.info('using prefix {} for environment variable override matches'.format(env_prefix))
+            self.env_prefix = '{}_'.format(env_prefix)
 
 
     def add(self, value, constant_name):
@@ -77,7 +81,15 @@ class Config:
         for s in self.parser.sections():
             for k in self.parser[s]:
                 cn = Config.to_constant_name(k, s)
-                self.add(os.environ.get(cn, self.parser[s][k]), cn)
+                cn_env = cn
+                if self.env_prefix != None:
+                    cn_env = self.env_prefix + cn
+                val = os.environ.get(cn_env)
+                if val == None:
+                    val = self.parser[s][k]
+                else:
+                    logg.info('environment variable {} overrides {}'.format(cn_env, cn))
+                self.add(val, cn)
 
 
     def process(self, set_as_current=False):
@@ -162,6 +174,4 @@ def config_from_environment():
 
 
 def config_dir_from_environment():
-    return os.environ.get('CIC_CONFIG_DIR')
-
-
+    return os.environ.get('CONFINI_DIR')
