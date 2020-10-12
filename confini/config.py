@@ -85,7 +85,7 @@ class Config:
                 if self.env_prefix != None:
                     cn_env = self.env_prefix + cn
                 val = os.environ.get(cn_env)
-                if val == None:
+                if val == None or val == '':
                     val = self.parser[s][k]
                 else:
                     logg.info('environment variable {} overrides {}'.format(cn_env, cn))

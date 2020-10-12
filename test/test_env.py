@@ -32,8 +32,6 @@ class TestEnv(unittest.TestCase):
                 }
         self.assertDictEqual(expect, c.store)
 
-
-    def test_env_b_override(self):
         os.environ['ZZZ_FOO_BAR'] = '44'
         inidir = os.path.join(self.wd, 'files')
         c = Config(inidir, 'ZZZ')
@@ -46,6 +44,16 @@ class TestEnv(unittest.TestCase):
                 }
         self.assertDictEqual(expect, c.store)
 
-
+        os.environ['ZZZ_FOO_BAR'] = ''
+        inidir = os.path.join(self.wd, 'files')
+        c = Config(inidir, 'ZZZ')
+        c.process()
+        expect = {
+            'FOO_BAR': '42',
+            'FOO_BAZ': '029a',
+            'BAR_FOO': 'oof',
+            'XYZZY_BERT': 'ernie',
+                }
+        self.assertDictEqual(expect, c.store)
 if __name__ == '__main__':
     unittest.main()

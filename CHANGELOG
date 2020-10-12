@@ -1,5 +1,6 @@
 0.2.1
 	- Set logger name
+	- Omit empty string environment variables
 0.2.0
 	- Add optional prefix string for environment overrides
 0.1.1
