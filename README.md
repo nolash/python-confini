@@ -92,11 +92,19 @@ Values can be **GNUPG** encrypted by saving them in individual encrypted files p
 BAR_BAZ = !gpg(foo_bar_baz.asc)
 ```
 
-Decryption mode must be explicitly activated:
+Decryption mode is on by default, and can be deactivated on instantiation:
 
 ```
->>> c = config.Config('/path/to/config/dir', decrypt=True)
+>>> c = config.Config('/path/to/config/dir')
+>>> c.process()
+>>> c.get()
+666
+>>> c = config.Config('/path/to/config/dir', decrypt=False)
+>>> c.process()
+>>> c.get()
+!gpg(foo_bar_baz.asc)
 ```
+
 The user keyring in the default location is used for decryption, which may be overridden as usual with the `GNUPGHOME` environment variable.
 
 
