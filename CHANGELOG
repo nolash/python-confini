@@ -1,3 +1,7 @@
+0.2.3
+	- Published on pypi.org
+0.2.2
+	- (Skipped)
 0.2.1
 	- Set logger name
 	- Omit empty string environment variables

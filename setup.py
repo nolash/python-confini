@@ -1,12 +1,19 @@
 from setuptools import setup
 
+f = open('./README.md', 'r')
+long_description = f.read()
+f.close()
+
 setup(
         name='confini',
-        version='0.2.1',
+        #version='0.2.1',
+        version='0.2.3',
         description='Parse, verify and merge all ini files in a single directory',
         author='Louis Holbrook',
         author_email='dev@holbrook.no',
         license='GPL3',
+        long_description=long_description,
+        long_description_content_type='text/markdown',
         install_requires=[
             'python-gnupg>=0.4.6,<0.5.0',
         ],
@@ -16,5 +23,5 @@ setup(
         scripts = [
             'scripts/parse.py',
             ],
-        url='https://holbrook.no',
+        url='https://gitlab.com/nolash/python-confini',
         )
