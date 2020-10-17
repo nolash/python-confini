@@ -97,6 +97,6 @@ Decryption mode must be explicitly activated:
 ```
 >>> c = config.Config('/path/to/config/dir', decrypt=True)
 ```
-The user keyring in the default location is used for decryption.
+The user keyring in the default location is used for decryption, which may be overridden as usual with the `GNUPGHOME` environment variable.
 
 
