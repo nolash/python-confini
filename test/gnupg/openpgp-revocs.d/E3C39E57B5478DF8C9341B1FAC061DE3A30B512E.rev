@@ -1,0 +1,35 @@
+This is a revocation certificate for the OpenPGP key:
+
+pub   rsa3072 2020-10-17 [SC] [expires: 2022-10-17]
+      E3C39E57B5478DF8C9341B1FAC061DE3A30B512E
+uid          Confini Encrypter <dev@holbrook.no>
+
+A revocation certificate is a kind of "kill switch" to publicly
+declare that a key shall not anymore be used.  It is not possible
+to retract such a revocation certificate once it has been published.
+
+Use it to revoke this key in case of a compromise or loss of
+the secret key.  However, if the secret key is still accessible,
+it is better to generate a new revocation certificate and give
+a reason for the revocation.  For details see the description of
+of the gpg command "--generate-revocation" in the GnuPG manual.
+
+To avoid an accidental use of this file, a colon has been inserted
+before the 5 dashes below.  Remove this colon with a text editor
+before importing and publishing this revocation certificate.
+
+:-----BEGIN PGP PUBLIC KEY BLOCK-----
+Comment: This is a revocation certificate
+
+iQG2BCABCAAgFiEE48OeV7VHjfjJNBsfrAYd46MLUS4FAl+K+LACHQAACgkQrAYd
+46MLUS7HMQv8DTs3zp74XIDL4coYc4j75MkZOqTdzQea6hlz4cWuzWAkLJi2m19p
+qC4vfhT7hvhwr/3/jc1Wd1wd8JkZWRdONU9aBx6NodvjOaCXzacfIBKO7BSIuhoM
+aEsLU8tUdigUoO84tpKojIareHxhJcgRIecStPAXru0NtyS0j+z9OznIaqvHW3o9
+yGeTJoHio17nXMH4jkBXNu1PszzPrBE1ttX43sfdwP9goxY5i7oBb+nWG+yFBsBE
+168k/dQ2ZWOaInnchqA6gNBWn5R2rK1sVS0v7BDvqXwBeNEohvW4HWarVY3nekv2
+wX3UcrXlg3n8anw2awtBinmh/iZAm11k4KX5r1mAd4Hj4Dwak4DzE9ZmqZeywsMq
+ARlkJdh7aG5OWEN9eUKEjj4GVIpr4GhsZvQFTspz4g0uIGfWhTzXyq9EasSUAgLj
+De0+dVaC8UDqH5qq1K8e6fweQDodn8ZA80U08BFqeHjkziFUY7JHE+cH3c+1/x1O
+6zJxHLAjzCvE
+=m9JT
+-----END PGP PUBLIC KEY BLOCK-----

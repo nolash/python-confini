@@ -8,6 +8,8 @@ import configparser
 import re
 import gnupg
 
+from .error import DecryptError
+
 logg = logging.getLogger('confini')
 
 current_config = None
@@ -128,7 +130,9 @@ class Config:
                 f = open(filename, 'rb')
                 logg.debug('decrypting entry {} in file {}'.format(k, f))
                 d = gpg.decrypt_file(f)
-                v =str(d)
+                if not d.ok:
+                    raise DecryptError()
+                v = str(d)
                 f.close()
         return v
 
