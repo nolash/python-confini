@@ -1,7 +1,11 @@
-0.2.3
+0.2.5
+	- Add default value as second argument to get
+0.2.4
 	- Published on pypi.org
+0.2.3
+	- (skipped)
 0.2.2
-	- (Skipped)
+	- (skipped)
 0.2.1
 	- Set logger name
 	- Omit empty string environment variables

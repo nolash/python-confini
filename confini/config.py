@@ -137,8 +137,12 @@ class Config:
         return v
 
 
-    def get(self, k):
+    def get(self, k, default=None):
         v = self.store.get(k)
+        if v == None:
+            if default != None:
+                logg.debug('returning default value for {}'.format(k))
+            return default
         return self._decrypt(k, v)
 
 
