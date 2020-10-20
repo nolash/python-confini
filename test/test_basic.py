@@ -16,8 +16,24 @@ class TestBasic(unittest.TestCase):
     def setUp(self):
         pass
 
+
     def tearDown(self):
         pass
+
+
+    def test_parse_default(self):
+        inidir = os.path.join(self.wd, 'files/default')
+        c = Config(inidir)
+        c.process()
+        r = c.get('FOO_BAR', 'plugh')
+        self.assertEqual(r, 'xyzzy')
+        r = c.get('FOO_BAZ', 'plugh')
+        self.assertEqual(r, 'plugh')
+        r = c.get('FOO_BAZ')
+        self.assertEqual(r, None)
+        with self.assertRaises(KeyError):
+            r = c.get('FOO_BAZBAZ')
+
 
     def test_parse_two_files(self):
         inidir = os.path.join(self.wd, 'files')

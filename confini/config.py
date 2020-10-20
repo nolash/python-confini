@@ -138,10 +138,14 @@ class Config:
 
 
     def get(self, k, default=None):
-        v = self.store.get(k)
+        v = self.store[k]
         if v == None:
             if default != None:
-                logg.debug('returning default value for {}'.format(k))
+                logg.debug('returning default value for empty value {}'.format(k))
+            return default
+        if type(v).__name__ == 'str' and v == '':
+            if default != None:
+                logg.debug('returning default value for empty string value {}'.format(k))
             return default
         return self._decrypt(k, v)
 
