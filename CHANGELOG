@@ -1,3 +1,5 @@
+0.2.7
+	- Remove stray shebang in module file
 0.2.6
 	- Return default on empty string value
 0.2.5

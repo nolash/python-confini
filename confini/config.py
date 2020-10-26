@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import logging
 import sys
 import os
@@ -146,7 +144,10 @@ class Config:
         if type(v).__name__ == 'str' and v == '':
             if default != None:
                 logg.debug('returning default value for empty string value {}'.format(k))
-            return default
+                return default
+            else:
+                return None
+
         return self._decrypt(k, v)
 
 
