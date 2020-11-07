@@ -13,4 +13,7 @@ if __name__ == "__main__":
     c = Config(sys.argv[1])
     c.process()
     for k in c.store.keys():
-        print('{}: {}'.format(k, c.get(k)))
+        v = c.get(k)
+        if v == None:
+            v = ''
+        print('{}={}'.format(k, v))
