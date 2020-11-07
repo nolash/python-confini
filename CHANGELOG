@@ -1,3 +1,5 @@
+0.3.0
+	- Remove spaces around equals sign in string dump
 0.2.7
 	- Remove stray shebang in module file
 0.2.6

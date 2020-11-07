@@ -169,7 +169,7 @@ class Config:
             except:
                 v = self.store[k]
 
-            ls.append('{} = {}'.format(k, v))
+            ls.append('{}={}'.format(k, v))
 
         return '\n'.join(ls)
 
