@@ -6,7 +6,7 @@ f.close()
 
 setup(
         name='confini',
-        version='0.3.1',
+        version='0.3.2',
         description='Parse, verify and merge all ini files in a single directory',
         author='Louis Holbrook',
         author_email='dev@holbrook.no',
@@ -18,9 +18,7 @@ setup(
         ],
         packages=[
             'confini',
+            'confini.runnable',
         ],
-        scripts = [
-            'scripts/parse.py',
-            ],
         url='https://gitlab.com/nolash/python-confini',
         )

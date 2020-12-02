@@ -1,3 +1,6 @@
+0.3.2
+	- Move config dump script to entry_point.console_scripts
+	- Add truncate value option to dump tool
 0.3.1
 	- Remove None string literal on empty values in dump
 0.3.0
