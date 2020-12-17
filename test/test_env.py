@@ -29,7 +29,7 @@ class TestEnv(unittest.TestCase):
                 'XYZZY_BERT': 'oscar',
                 'BAR_FOO': None,
                 }
-        c.process_override(override_dict, 'arbitrary dict')
+        c.dict_override(override_dict, 'arbitrary dict')
 
         expect = {
             'FOO_BAR': '666',
@@ -38,6 +38,23 @@ class TestEnv(unittest.TestCase):
             'XYZZY_BERT': 'oscar',
                 }
         self.assertDictEqual(expect, c.store)
+
+        for k in c.store:
+            logg.debug('have now {} {}'.format(k, c.store[k]))
+        override_dict = {
+                'BAR_FOO': 'barbarbar',
+                }
+        c.dict_override(override_dict, 'arbitrary dict')
+
+        expect = {
+            'FOO_BAR': '666',
+            'FOO_BAZ': '029a',
+            'BAR_FOO': 'barbarbar',
+            'XYZZY_BERT': 'oscar',
+                }
+        self.assertDictEqual(expect, c.store)
+
+
 
 
     def test_env_a_override(self):

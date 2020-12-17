@@ -77,19 +77,32 @@ class Config:
         return '{}_{}'.format(section.upper(), directive.upper())
 
 
-    def process_override(self, dct, dct_description):
+    def _sections_override(self, dct, dct_description):
         for s in self.parser.sections():
             for k in self.parser[s]:
                 cn = Config.to_constant_name(k, s)
-                cn_env = cn
-                if self.env_prefix != None:
-                    cn_env = self.env_prefix + cn
-                val = dct.get(cn_env)
-                if val == None or val == '':
-                    val = self.parser[s][k]
-                else:
-                    logg.info('{} {} overrides {}'.format(dct_description, cn_env, cn))
-                self.add(val, cn)
+                self.override(cn, self.parser[s][k], dct, dct_description)
+
+
+    def dict_override(self, dct, dct_description):
+        for k in dct.keys():
+            try:
+                logg.debug('v {} {}'.format(k, dct))
+                self.override(k, self.store[k], dct, dct_description)
+            except KeyError:
+                logg.warning('override key {} have no match in config store'.format(cn))
+
+
+    def override(self, cn, v, dct, dct_description):
+        cn_env = cn
+        if self.env_prefix != None:
+            cn_env = self.env_prefix + cn
+        val = dct.get(cn_env)
+        if val == None or val == '':
+            val = self.store.get(cn, v)
+        else:
+            logg.info('{} {} overrides {}'.format(dct_description, cn_env, cn))
+        self.add(val, cn)
 
 
     def process(self, set_as_current=False):
@@ -112,7 +125,7 @@ class Config:
         tmp.close()
         self.parser.read(tmpname)
         os.unlink(tmpname)
-        self.process_override(os.environ, 'environment variable')
+        self._sections_override(os.environ, 'environment variable')
         if set_as_current:
             set_current(self, description=self.dir)
 
