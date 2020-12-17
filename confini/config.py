@@ -87,7 +87,6 @@ class Config:
     def dict_override(self, dct, dct_description):
         for k in dct.keys():
             try:
-                logg.debug('v {} {}'.format(k, dct))
                 self.override(k, self.store[k], dct, dct_description)
             except KeyError:
                 logg.warning('override key {} have no match in config store'.format(cn))

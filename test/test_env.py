@@ -39,8 +39,6 @@ class TestEnv(unittest.TestCase):
                 }
         self.assertDictEqual(expect, c.store)
 
-        for k in c.store:
-            logg.debug('have now {} {}'.format(k, c.store[k]))
         override_dict = {
                 'BAR_FOO': 'barbarbar',
                 }
