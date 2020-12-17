@@ -77,18 +77,18 @@ class Config:
         return '{}_{}'.format(section.upper(), directive.upper())
 
 
-    def _process_env(self):
+    def process_override(self, dct, dct_description):
         for s in self.parser.sections():
             for k in self.parser[s]:
                 cn = Config.to_constant_name(k, s)
                 cn_env = cn
                 if self.env_prefix != None:
                     cn_env = self.env_prefix + cn
-                val = os.environ.get(cn_env)
+                val = dct.get(cn_env)
                 if val == None or val == '':
                     val = self.parser[s][k]
                 else:
-                    logg.info('environment variable {} overrides {}'.format(cn_env, cn))
+                    logg.info('{} {} overrides {}'.format(dct_description, cn_env, cn))
                 self.add(val, cn)
 
 
@@ -112,7 +112,7 @@ class Config:
         tmp.close()
         self.parser.read(tmpname)
         os.unlink(tmpname)
-        self._process_env()
+        self.process_override(os.environ, 'environment variable')
         if set_as_current:
             set_current(self, description=self.dir)
 

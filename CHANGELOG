@@ -1,3 +1,5 @@
+0.3.3
+	- Export overrider function to enable use with arbitrary dict
 0.3.2
 	- Move config dump script to entry_point.console_scripts
 	- Add truncate value option to dump tool

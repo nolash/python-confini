@@ -19,18 +19,32 @@ class TestEnv(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_dict_override(self):
+        inidir = os.path.join(self.wd, 'files')
+        c = Config(inidir)
+        c.process()
+
+        override_dict = {
+                'FOO_BAR': '666',
+                'XYZZY_BERT': 'oscar',
+                'BAR_FOO': None,
+                }
+        c.process_override(override_dict, 'arbitrary dict')
+
+        expect = {
+            'FOO_BAR': '666',
+            'FOO_BAZ': '029a',
+            'BAR_FOO': 'oof',
+            'XYZZY_BERT': 'oscar',
+                }
+        self.assertDictEqual(expect, c.store)
+
+
     def test_env_a_override(self):
         os.environ['FOO_BAR'] = '43'
         inidir = os.path.join(self.wd, 'files')
         c = Config(inidir)
         c.process()
-        expect = {
-            'FOO_BAR': '43',
-            'FOO_BAZ': '029a',
-            'BAR_FOO': 'oof',
-            'XYZZY_BERT': 'ernie',
-                }
-        self.assertDictEqual(expect, c.store)
 
         os.environ['ZZZ_FOO_BAR'] = '44'
         inidir = os.path.join(self.wd, 'files')
@@ -55,5 +69,6 @@ class TestEnv(unittest.TestCase):
             'XYZZY_BERT': 'ernie',
                 }
         self.assertDictEqual(expect, c.store)
+
 if __name__ == '__main__':
     unittest.main()
