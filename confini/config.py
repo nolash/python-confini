@@ -89,7 +89,7 @@ class Config:
             try:
                 self.override(k, self.store[k], dct, dct_description)
             except KeyError:
-                logg.warning('override key {} have no match in config store'.format(cn))
+                logg.warning('override key {} have no match in config store'.format(k))
 
 
     def override(self, cn, v, dct, dct_description):
