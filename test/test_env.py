@@ -54,7 +54,6 @@ class TestEnv(unittest.TestCase):
 
 
 
-
     def test_env_a_override(self):
         os.environ['FOO_BAR'] = '43'
         inidir = os.path.join(self.wd, 'files')

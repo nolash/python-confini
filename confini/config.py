@@ -168,6 +168,9 @@ class Config:
 
     def true(self, k):
         v = self.store.get(k)
+        if type(v).__name__ == 'bool':
+            logg.debug('entry {} is already bool'.format(k))
+            return v
         d = self._decrypt(k, v)
         if d.lower() not in ['true', 'false', '0', '1', 'on', 'off']:
             raise ValueError('{} not a boolean value'.format(k))
