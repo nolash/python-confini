@@ -131,6 +131,9 @@ class Config:
 
 
     def _decrypt(self, k, v):
+        if type(v).__name__ != 'str':
+            logg.debug('entry {} is not type str'.format(k))
+            return v
         if self.decrypt:
             m = re.match(r'^\!gpg\((.*)\)', v)
             if m != None:

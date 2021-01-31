@@ -31,6 +31,17 @@ class TestBasic(unittest.TestCase):
             c.get('FOO_BAZ')
         os.environ['GNUPGHOME'] = gnupg_dir
         c.get('FOO_BAZ')
+
+
+    def test_decrypt_with_non_string(self):
+        inidir = os.path.join(self.wd, 'files/crypt')
+        c = Config(inidir, decrypt=True)
+        c.process()
+        override = {
+                'FOO_XYZZY': False,
+                }
+        c.dict_override(override, 'test')
+        c.get('FOO_XYZZY')
     
 if __name__ == '__main__':
     unittest.main()
