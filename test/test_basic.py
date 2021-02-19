@@ -35,6 +35,17 @@ class TestBasic(unittest.TestCase):
             r = c.get('FOO_BAZBAZ')
 
 
+    def test_overwrite_guard(self):
+        inidir = os.path.join(self.wd, 'files/default')
+        c = Config(inidir)
+        c.process()
+        with self.assertRaises(AttributeError):
+            c.add('xxx', 'FOO_BAR')
+        c.add('xxx', 'FOO_BAR', exists_ok=True)
+        r = c.get('FOO_BAR')
+        self.assertEqual(r, 'xxx')
+
+
     def test_parse_two_files(self):
         inidir = os.path.join(self.wd, 'files')
         c = Config(inidir)
@@ -57,6 +68,9 @@ class TestBasic(unittest.TestCase):
         c.require('ERNIE', 'XYZZY')
         self.assertFalse(c.validate())
         logg.debug(c)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -43,7 +43,12 @@ class Config:
             self.env_prefix = '{}_'.format(env_prefix)
 
 
-    def add(self, value, constant_name):
+    def add(self, value, constant_name, exists_ok=False):
+        if self.store.get(constant_name) != None:
+            if not exists_ok:
+                raise AttributeError('config key {} already exists'.format(constant_name))
+            else:
+                logg.debug('overwriting key {}'.format(constant_name))
         self.store[constant_name] = value
 
 
@@ -101,7 +106,7 @@ class Config:
             val = self.store.get(cn, v)
         else:
             logg.info('{} {} overrides {}'.format(dct_description, cn_env, cn))
-        self.add(val, cn)
+        self.add(val, cn, exists_ok=True)
 
 
     def process(self, set_as_current=False):

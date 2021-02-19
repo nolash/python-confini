@@ -1,5 +1,6 @@
 0.3.5
 	- Fix logging bug in 0.3.4 update
+	- Add key exist guard in add method
 0.3.4
 	- Fix bug in 0.3.3 update
 0.3.3
