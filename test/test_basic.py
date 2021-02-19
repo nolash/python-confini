@@ -70,6 +70,11 @@ class TestBasic(unittest.TestCase):
         logg.debug(c)
 
 
+    def test_all(self):
+        inidir = os.path.join(self.wd, 'files')
+        c = Config(inidir)
+        a = c.all()
+        self.assertEqual(a, c.store)
 
 
 if __name__ == '__main__':

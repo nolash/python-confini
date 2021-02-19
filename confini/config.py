@@ -171,6 +171,10 @@ class Config:
         return self._decrypt(k, v)
 
 
+    def all(self):
+        return self.store
+
+
     def true(self, k):
         v = self.store.get(k)
         if type(v).__name__ == 'bool':
@@ -199,6 +203,7 @@ class Config:
 
     def __repr__(self):
         return "<Config '{}'>".format(self.dir)
+
 
 
 
