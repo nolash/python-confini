@@ -172,7 +172,7 @@ class Config:
 
 
     def all(self):
-        return self.store
+        return list(self.store.keys())
 
 
     def true(self, k):

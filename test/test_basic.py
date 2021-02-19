@@ -74,7 +74,7 @@ class TestBasic(unittest.TestCase):
         inidir = os.path.join(self.wd, 'files')
         c = Config(inidir)
         a = c.all()
-        self.assertEqual(a, c.store)
+        self.assertEqual(a, list(c.store.keys()))
 
 
 if __name__ == '__main__':
