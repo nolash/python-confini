@@ -28,6 +28,7 @@ def set_current(conf, description=''):
 class Config:
 
     parser = configparser.ConfigParser(strict=True)
+    default_censor_string = '***'
 
     def __init__(self, config_dir, env_prefix=None, decrypt=True):
         if not os.path.isdir(config_dir):
@@ -186,16 +187,19 @@ class Config:
         return d.lower() in ['true', '1', 'on']
 
 
+    def apply_censor(self, k):
+        try:
+            _ = self.censored[k]
+            return self.default_censor_string
+        except KeyError:
+            return self.store[k]
+
+
+
     def __str__(self):
         ls = []
         for k in self.store.keys():
-            v = ''
-            try:
-                _ = self.censored[k]
-                v = '***'
-            except:
-                v = self.store[k]
-
+            v = self.apply_censor(k)
             ls.append('{}={}'.format(k, v))
 
         return '\n'.join(ls)
