@@ -34,7 +34,7 @@ class Config:
         self.dirs = []
         for d in config_dirs:
             if not os.path.isdir(d):
-                raise OSError('{} is not a directory'.format(config_dir))
+                raise OSError('{} is not a directory'.format(config_dirs))
             self.dirs.append(os.path.realpath(d))
         self.required = {}
         self.censored = {}
@@ -142,20 +142,21 @@ class Config:
         c = 0
         logg.debug('d {}'.format(d))
         for tmp_config_dir in d:
-            #tmpname = os.path.join(d, tmpname)
-            #logg.debug('d {}'.format(tmpname))
             tmp_config_dir = os.path.join(tmp_dir, tmp_config_dir)
             logg.debug('>> barrr {}'.format(tmp_config_dir))
-            if c == 0:
-                for tmp_file in os.listdir(os.path.join(tmp_config_dir)):
-                    tmp_config_file_path = os.path.join(tmp_config_dir, tmp_file)
-                    logg.debug('>> fooo {}'.format(tmp_config_file_path))
+            for tmp_file in os.listdir(os.path.join(tmp_config_dir)):
+                tmp_config_file_path = os.path.join(tmp_config_dir, tmp_file)
+                if c == 0:
                     self.parser.read(tmp_config_file_path)
-            else:
-                local_parser = configparser.ConfigParser(strict=True)
-                local_parser.read(tmpname)
-                for s in local_parser.sections():
-                    logg.debug('seciont {}'.format(s))
+                else:
+                    local_parser = configparser.ConfigParser(strict=True)
+                    local_parser.read(tmp_config_file_path)
+                    for s in local_parser.sections():
+                        for so in local_parser.options(s):
+                            k = self.to_constant_name(so, s)
+                            v = local_parser.get(s, so)
+                            logg.debug('multi config file override: {} -> {}'.format(k, v))
+                            self.add(v, k, exists_ok=True)
             c += 1
         self._sections_override(os.environ, 'environment variable')
         if set_as_current:
