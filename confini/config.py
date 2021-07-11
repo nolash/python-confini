@@ -30,10 +30,12 @@ class Config:
     parser = configparser.ConfigParser(strict=True)
     default_censor_string = '***'
 
-    def __init__(self, config_dir, env_prefix=None, decrypt=True):
-        if not os.path.isdir(config_dir):
-            raise OSError('{} is not a directory'.format(config_dir))
-        self.dir = os.path.realpath(config_dir)
+    def __init__(self, config_dirs, env_prefix=None, decrypt=True):
+        self.dirs = []
+        for d in config_dirs:
+            if not os.path.isdir(d):
+                raise OSError('{} is not a directory'.format(config_dir))
+            self.dirs.append(os.path.realpath(d))
         self.required = {}
         self.censored = {}
         self.store = {}
@@ -113,23 +115,48 @@ class Config:
     def process(self, set_as_current=False):
         """Concatenates all .ini files in the config directory attribute and parses them to memory
         """
-        tmp = tempfile.NamedTemporaryFile(delete=False)
-        tmpname = tmp.name
-        for filename in os.listdir(self.dir):
-            if re.match(r'.+\.ini$', filename) == None:
-                logg.debug('skipping file {}'.format(filename))
-                continue
-            logg.info('reading file {}'.format(filename))
-            f = open(os.path.join(self.dir, filename), 'rb')
-            while 1:
-                data = f.read()
-                if not data:
-                    break
-                tmp.write(data)
-            f.close()
-        tmp.close()
-        self.parser.read(tmpname)
-        os.unlink(tmpname)
+        #tmp = tempfile.NamedTemporaryFile(delete=False)
+        tmp_dir = tempfile.mkdtemp()
+        #tmpname = tmp.name
+        for i, d in enumerate(self.dirs):
+            tmp_out_dir = os.path.join(tmp_dir, str(i))
+            os.makedirs(tmp_out_dir)
+            logg.debug('processing dir #{}: {}'.format(i, tmp_out_dir))
+            for filename in os.listdir(d):
+                tmp_out = open(os.path.join(tmp_out_dir, filename), 'wb')
+                if re.match(r'.+\.ini$', filename) == None:
+                    logg.debug('skipping file {}/{}'.format(d, filename))
+                    continue
+                logg.info('reading file {}/{}'.format(d, filename))
+                f = open(os.path.join(d, filename), 'rb')
+                while 1:
+                    data = f.read()
+                    if not data:
+                        break
+                    tmp_out.write(data)
+                f.close()
+                tmp_out.close()
+        #tmp.close()
+        d = os.listdir(tmp_dir)
+        d.sort()
+        c = 0
+        logg.debug('d {}'.format(d))
+        for tmp_config_dir in d:
+            #tmpname = os.path.join(d, tmpname)
+            #logg.debug('d {}'.format(tmpname))
+            tmp_config_dir = os.path.join(tmp_dir, tmp_config_dir)
+            logg.debug('>> barrr {}'.format(tmp_config_dir))
+            if c == 0:
+                for tmp_file in os.listdir(os.path.join(tmp_config_dir)):
+                    tmp_config_file_path = os.path.join(tmp_config_dir, tmp_file)
+                    logg.debug('>> fooo {}'.format(tmp_config_file_path))
+                    self.parser.read(tmp_config_file_path)
+            else:
+                local_parser = configparser.ConfigParser(strict=True)
+                local_parser.read(tmpname)
+                for s in local_parser.sections():
+                    logg.debug('seciont {}'.format(s))
+            c += 1
         self._sections_override(os.environ, 'environment variable')
         if set_as_current:
             set_current(self, description=self.dir)
