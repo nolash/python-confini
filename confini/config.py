@@ -22,8 +22,8 @@ class Config:
     parser = configparser.ConfigParser(strict=True)
     default_censor_string = '***'
 
-    def __init__(self, schema_dir, env_prefix=None, override_dirs=[]):
-        self.dirs = [schema_dir]
+    def __init__(self, default_dir, env_prefix=None, override_dirs=[]):
+        self.dirs = [default_dir]
         for d in override_dirs:
             if not os.path.isdir(d):
                 raise OSError('{} is not a directory'.format(override_dirs))
@@ -120,14 +120,19 @@ class Config:
         tmp_dir = tempfile.mkdtemp()
         logg.debug('using tmp processing dir {}'.format(tmp_dir))
         for i, d in enumerate(self.dirs):
+            d = os.path.realpath(d)
+            if i == 0:
+                d_label = 'default'
+            else:
+                d_label = 'override #' + str(i)
             tmp_out_dir = os.path.join(tmp_dir, str(i))
             os.makedirs(tmp_out_dir)
-            logg.debug('processing dir #{}: {}'.format(i, d))
+            logg.debug('processing dir {} ({})'.format(d, d_label))
+            tmp_out = open(os.path.join(tmp_out_dir, 'config.ini'), 'ab')
             for filename in os.listdir(d):
                 if re.match(r'.+\.ini$', filename) == None:
                     logg.debug('skipping file {}/{}'.format(d, filename))
                     continue
-                tmp_out = open(os.path.join(tmp_out_dir, filename), 'wb')
                 logg.info('reading file {}/{}'.format(d, filename))
                 f = open(os.path.join(d, filename), 'rb')
                 while 1:
@@ -136,17 +141,16 @@ class Config:
                         break
                     tmp_out.write(data)
                 f.close()
-                tmp_out.close()
+            tmp_out.close()
         d = os.listdir(tmp_dir)
         d.sort()
         c = 0
-        logg.debug('d {}'.format(d))
         for i, tmp_config_dir in enumerate(d):
             tmp_config_dir = os.path.join(tmp_dir, tmp_config_dir)
             for tmp_file in os.listdir(os.path.join(tmp_config_dir)):
                 tmp_config_file_path = os.path.join(tmp_config_dir, tmp_file)
                 if c == 0:
-                    logg.debug('apply initial parser')
+                    logg.debug('apply default parser for config directory {}'.format(self.dirs[i]))
                     self.parser.read(tmp_config_file_path)
                     for s in self.parser.sections():
                         for so in self.parser.options(s):
@@ -156,14 +160,14 @@ class Config:
                             self.add(v, k, exists_ok=True)
                             self.set_dir(k, self.dirs[i])
                 else:
-                    logg.debug('apply overrider parser (idx {})'.format(i))
+                    logg.debug('apply override parser for config directory {}'.format(self.dirs[i]))
                     local_parser = configparser.ConfigParser(strict=True)
                     local_parser.read(tmp_config_file_path)
                     for s in local_parser.sections():
                         for so in local_parser.options(s):
                             k = self.to_constant_name(so, s)
                             if not self.have(k):
-                                raise KeyError('config overrides in {} defines key {} not present in schema config {}'.format(self.dirs[i], k, self.dirs[0]))
+                                raise KeyError('config overrides in {} defines key {} not present in default config {}'.format(self.dirs[i], k, self.dirs[0]))
                             v = local_parser.get(s, so)
                             logg.debug('checking {} {} {}'.format(k, s, so))
                             if not self.is_as_none(v):
