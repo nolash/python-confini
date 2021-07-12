@@ -22,11 +22,11 @@ class Config:
     parser = configparser.ConfigParser(strict=True)
     default_censor_string = '***'
 
-    def __init__(self, config_dirs, env_prefix=None):
-        self.dirs = []
-        for d in config_dirs:
+    def __init__(self, schema_dir, env_prefix=None, override_dirs=[]):
+        self.dirs = [schema_dir]
+        for d in override_dirs:
             if not os.path.isdir(d):
-                raise OSError('{} is not a directory'.format(config_dirs))
+                raise OSError('{} is not a directory'.format(override_dirs))
             self.dirs.append(os.path.realpath(d))
         self.required = {}
         self.censored = {}

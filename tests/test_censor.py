@@ -17,7 +17,7 @@ class TestCensor(unittest.TestCase):
 
     def test_censor(self):
         inidir = os.path.join(self.wd, 'files/translate')
-        c = Config([inidir])
+        c = Config(inidir)
         c.process()
         c.censor('foo', 'bar')
         v = c.apply_censor('BAR_FOO')
