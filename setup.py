@@ -19,6 +19,7 @@ setup(
         packages=[
             'confini',
             'confini.runnable',
+            'confini.crypt',
         ],
         url='https://gitlab.com/nolash/python-confini',
         )
