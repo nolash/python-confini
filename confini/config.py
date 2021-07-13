@@ -44,11 +44,13 @@ class Config:
 
 
     def add(self, value, constant_name, exists_ok=False):
-        if self.store.get(constant_name) != None:
+        value_stored = self.store.get(constant_name)
+        if not self.is_as_none(value_stored):
             if not exists_ok:
                 raise AttributeError('config key {} already exists'.format(constant_name))
             else:
-                logg.debug('overwriting key {}'.format(constant_name))
+                if value_stored != value:
+                    logg.debug('updating key {}'.format(constant_name))
         self.store[constant_name] = value
 
 
@@ -156,7 +158,7 @@ class Config:
                         for so in self.parser.options(s):
                             k = self.to_constant_name(so, s)
                             v = self.parser.get(s, so)
-                            logg.debug('config set: {} -> {}'.format(k, v))
+                            logg.debug('default config set {}'.format(k))
                             self.add(v, k, exists_ok=True)
                             self.set_dir(k, self.dirs[i])
                 else:
@@ -171,7 +173,7 @@ class Config:
                             v = local_parser.get(s, so)
                             logg.debug('checking {} {} {}'.format(k, s, so))
                             if not self.is_as_none(v):
-                                logg.debug('multi config file override: {} -> {}'.format(k, v))
+                                logg.debug('multi config file overrides {}'.format(k))
                                 self.add(v, k, exists_ok=True)
                                 self.set_dir(k, self.dirs[i])
             c += 1
@@ -253,7 +255,10 @@ class Config:
 
     @classmethod
     def is_as_none(cls, v):
-        return isinstance(v, str) and v == ''
+        if isinstance(v, str) and v == '':
+            return True
+        if v == None:
+            return True
 
 
 def config_from_environment():
