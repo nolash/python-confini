@@ -1,3 +1,5 @@
+0.4.1
+	- Enable multiple config base directories when passing list as config_dir argument
 0.4.0
 	- Enable multiple config override directories
 0.3.6

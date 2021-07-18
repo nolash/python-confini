@@ -6,7 +6,7 @@ f.close()
 
 setup(
         name='confini',
-        version='0.4.0a2',
+        version='0.4.1a1',
         description='Parse, verify and merge all ini files in a single directory',
         author='Louis Holbrook',
         author_email='dev@holbrook.no',

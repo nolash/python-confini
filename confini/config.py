@@ -1,9 +1,12 @@
+# standard imports
 import logging
 import sys
 import os
 import tempfile
 import configparser
 import re
+
+# external imports
 import gnupg
 
 logg = logging.getLogger('confini')
@@ -17,13 +20,19 @@ def set_current(conf, description=''):
     current_config = conf 
 
 
+
+
 class Config:
 
     parser = configparser.ConfigParser(strict=True)
     default_censor_string = '***'
 
     def __init__(self, default_dir, env_prefix=None, override_dirs=[]):
-        self.dirs = [default_dir]
+        self.__target_tmpdir = None
+        if isinstance(default_dir, list):
+            self.collect_from_dirs(default_dir)
+        else:
+            self.dirs = [default_dir]
         for d in override_dirs:
             if not os.path.isdir(d):
                 raise OSError('{} is not a directory'.format(override_dirs))
@@ -37,6 +46,24 @@ class Config:
         if env_prefix != None:
             logg.info('using prefix {} for environment variable override matches'.format(env_prefix))
             self.env_prefix = '{}_'.format(env_prefix)
+
+    def collect_from_dirs(self, dirs):
+        self.__target_tmpdir = tempfile.TemporaryDirectory()
+        self.dirs = [self.__target_tmpdir.name]
+        for i, d in enumerate(dirs):
+            for filename_in in os.listdir(d):
+                if re.match(r'.+\.ini$', filename_in) == None:
+                    continue
+                filename_out = '{}_{}'.format(i, filename_in)
+                in_filepath = os.path.join(d, filename_in)
+                out_filepath = os.path.join(self.dirs[0], filename_out)
+                fr = open(in_filepath, 'rb')
+                fw = open(out_filepath, 'wb')
+                fw.write(fr.read())
+                fw.close()
+                fr.close()
+                logg.debug('base config {} will be processed as {}'.format(in_filepath, out_filepath))
+#        return target_dir.name
 
 
     def add_decrypt(self, decrypter):
