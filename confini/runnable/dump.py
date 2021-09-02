@@ -39,7 +39,7 @@ def main():
                 logg.info('Using config directory for module {} in {}'.format(m, schema_mod_candidate))
             except FileNotFoundError:
                 continue
-            schema_dirs.append(md) 
+            schema_dirs.append(schema_mod_candidate) 
 
     if args.schema_dir != None:
         schema_dirs += args.schema_dir
