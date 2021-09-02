@@ -29,6 +29,8 @@ class Config:
 
     def __init__(self, default_dir, env_prefix=None, override_dirs=[]):
         self.__target_tmpdir = None
+        if default_dir == None:
+            default_dir = override_dirs
         if isinstance(default_dir, list):
             self.collect_from_dirs(default_dir)
         else:
@@ -174,6 +176,8 @@ class Config:
         d = os.listdir(tmp_dir)
         d.sort()
         c = 0
+
+        # TODO: this will fail of sections/options are repeated. should first use individual parser instances to flatten to single file (perhaps in collect_from_dirs already)
         for i, tmp_config_dir in enumerate(d):
             tmp_config_dir = os.path.join(tmp_dir, tmp_config_dir)
             for tmp_file in os.listdir(os.path.join(tmp_config_dir)):
