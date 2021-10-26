@@ -16,6 +16,8 @@ logg = logging.getLogger()
 argparser = argparse.ArgumentParser()
 argparser.add_argument('-z', action='store_true', help='Truncate values in output')
 argparser.add_argument('-v', action='store_true', help='Be verbose')
+argparser.add_argument('--prefix', type=str, help='Prefix every line with given string')
+argparser.add_argument('--skip-empty', action='store_true', dest='skip_empty', help='Skip defined directives that are missing a value')
 argparser.add_argument('--schema-dir', dest='schema_dir', action='append', type=str, help='Configuation directory to merge with schema definitions')
 argparser.add_argument('--schema-module', dest='schema_module', action='append', type=str, default=[], help='Module path to merge with schema definitions')
 argparser.add_argument('config_dir', nargs='*', type=str, help='Configuation directories to parse')
@@ -24,6 +26,8 @@ args = argparser.parse_args()
 if args.v:
     logg.setLevel(logging.DEBUG)
 
+if args.z and args.skip_empty:
+    logg.warning('Both -z and --skip-empty are defined, this will produce no output')
 
 def main():
     schema_dirs = []
@@ -53,7 +57,12 @@ def main():
         v = c.get(k)
         if args.z or v == None:
             v = ''
-        print('{}={}'.format(k, v))
+        if v == '' and args.skip_empty:
+            logg.debug('skipping empty directive {}'.format(k))
+            continue
+        if args.prefix != None:
+            sys.stdout.write(args.prefix + ' ')
+        sys.stdout.write('{}={}\n'.format(k, v))
 
 
 if __name__ == "__main__":

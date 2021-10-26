@@ -20,8 +20,6 @@ def set_current(conf, description=''):
     current_config = conf 
 
 
-
-
 class Config:
 
     parser = configparser.ConfigParser(strict=True)
@@ -35,6 +33,10 @@ class Config:
             self.collect_from_dirs(default_dir)
         else:
             self.dirs = [default_dir]
+        if isinstance(override_dirs, str):
+            override_dirs = [override_dirs]
+        elif override_dirs == None:
+            override_dirs = []
         for d in override_dirs:
             if not os.path.isdir(d):
                 raise OSError('{} is not a directory'.format(override_dirs))
@@ -48,6 +50,7 @@ class Config:
         if env_prefix != None:
             logg.info('using prefix {} for environment variable override matches'.format(env_prefix))
             self.env_prefix = '{}_'.format(env_prefix)
+
 
     def collect_from_dirs(self, dirs):
         self.__target_tmpdir = tempfile.TemporaryDirectory()
