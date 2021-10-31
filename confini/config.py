@@ -243,9 +243,19 @@ class Config:
         return self._decrypt(k, v, self.src_dirs.get(k))
 
 
-    def remove(self, k):
-        logg.debug('removing key {}'.format(k))
-        del self.store[k]
+    def remove(self, k, strict=True):
+        removes = []
+        if strict:
+            removes = [k]
+        else:
+            l = len(k)
+            re_s = r'^' + k
+            for v in self.all():
+                if len(v) >= l and re.match(re_s, v):
+                    removes.append(v)
+        for v in removes:
+            del self.store[v]
+            logg.debug('removing key: {}'.format(v))
 
 
     def have(self, k):

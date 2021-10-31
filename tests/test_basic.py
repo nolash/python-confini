@@ -84,6 +84,29 @@ class TestBasic(unittest.TestCase):
         logg.debug(c)
 
 
+    def test_remove_strict(self):
+        inidir = os.path.join(self.wd, 'files/default')
+        c = Config(inidir)
+        c.process()
+        c.remove('FOO_BAR')
+        with self.assertRaises(KeyError):
+            c.get('FOO_BAR')
+
+
+    def test_remove_wild(self):
+        inidir = os.path.join(self.wd, 'files/remove')
+        c = Config(inidir)
+        c.process()
+        c.remove('FOO', strict=False)
+        self.assertEqual(len(c.all()), 0)
+
+        c = Config(inidir)
+        c.process()
+        c.remove('FOO_BA', strict=False)
+        c.get('FOO_XYZZY') 
+        self.assertEqual(len(c.all()), 1)
+
+
     def test_all(self):
         inidir = os.path.join(self.wd, 'files')
         c = Config(inidir)
