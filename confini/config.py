@@ -243,6 +243,11 @@ class Config:
         return self._decrypt(k, v, self.src_dirs.get(k))
 
 
+    def remove(self, k):
+        logg.debug('removing key {}'.format(k))
+        del self.store[k]
+
+
     def have(self, k):
         try:
             v = self.store[k]

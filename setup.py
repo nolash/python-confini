@@ -6,11 +6,11 @@ f.close()
 
 setup(
         name='confini',
-        version='0.4.2rc4',
+        version='0.5.0rc1',
         description='Parse, verify and merge all ini files in a single directory',
         author='Louis Holbrook',
         author_email='dev@holbrook.no',
-        license='GPL3',
+        license='WTFPL',
         long_description=long_description,
         long_description_content_type='text/markdown',
         install_requires=[
