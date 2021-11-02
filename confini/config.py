@@ -25,10 +25,10 @@ def set_current(conf, description=''):
 
 class Config:
 
-    parser = configparser.ConfigParser(strict=True)
     default_censor_string = '***'
 
     def __init__(self, default_dir, env_prefix=None, override_dirs=[]):
+        self.parser = configparser.ConfigParser(strict=True)
         self.__target_tmpdir = None
         if default_dir == None:
             default_dir = override_dirs

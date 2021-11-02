@@ -13,14 +13,6 @@ class TestBasic(unittest.TestCase):
 
     wd = os.path.dirname(__file__)
 
-    def setUp(self):
-        pass
-
-
-    def tearDown(self):
-        pass
-
-
     def test_parse_default(self):
         inidir = os.path.join(self.wd, 'files/default')
         c = Config(inidir)
@@ -74,9 +66,10 @@ class TestBasic(unittest.TestCase):
         self.assertDictEqual(expect, c.store)
 
 
-    def test_require(self):
+    def test_remove_require(self):
         inidir = os.path.join(self.wd, 'files')
         c = Config(inidir)
+        c.process()
         c.require('BERT', 'XYZZY')
         self.assertTrue(c.validate())
         c.require('ERNIE', 'XYZZY')
