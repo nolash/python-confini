@@ -54,6 +54,14 @@ class ConfigExporter:
 
 
     def export_section(self, ks, w):
+        if self.make_doc:
+            try:
+                v = self.doc.get(ks, '_')
+                w.write("# " + v + "\n")
+            except KeyError:
+                logg.warning('doc missing for section {}'.format(ks))
+                pass
+
         w.write("[" + ks + "]\n")
         for ko in self.sections[ks].keys():
             if self.make_doc:

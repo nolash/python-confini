@@ -30,7 +30,11 @@ class ConfigEnvParser:
             if len(l) == 0:
                 break
             (k, v) = l.split('=')
-            (ks, ko) = k.split('_', maxsplit=1)
+            try:
+                (ks, ko) = k.split('_', maxsplit=1)
+            except ValueError:
+                ks = k
+                ko = '_'
             ks = ks.lower()
             ko = ko.lower()
             v = v.rstrip()

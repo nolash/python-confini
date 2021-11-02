@@ -110,7 +110,16 @@ class TestExport(unittest.TestCase):
         w.seek(0)
         s = w.read()
 
+        print(s)
         re_c = re.compile('^# ', re.MULTILINE)
+        m = re_c.finditer(s)
+        next(m)
+        next(m)
+        next(m)
+        with self.assertRaises(StopIteration):
+            next(m)
+
+        re_c = re.compile('^# .*foo$', re.MULTILINE)
         m = re_c.finditer(s)
         next(m)
         next(m)
