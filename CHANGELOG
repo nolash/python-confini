@@ -1,6 +1,16 @@
-0.3.5
+0.5.0
+	- License change from GPL to WTFPL
+	- Add remove method
+0.4.2
+	- Enable multiple config base and override for the dump tool
+0.4.1
+	- Enable multiple config base directories when passing list as config_dir argument
+0.4.0
+	- Enable multiple config override directories
+0.3.6
 	- Fix logging bug in 0.3.4 update
 	- Add key exist guard in add method
+0.3.5-unreleased
 0.3.4
 	- Fix bug in 0.3.3 update
 0.3.3

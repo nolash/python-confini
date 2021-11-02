@@ -1,22 +1,17 @@
+# standard imports
 import logging
 import sys
 import os
 import tempfile
 import configparser
 import re
-import gnupg
 
-from .error import DecryptError
+# external imports
+import gnupg
 
 logg = logging.getLogger('confini')
 
 current_config = None
-
-gpg = gnupg.GPG(
-    verbose=False,
-    use_agent=True,
-        )
-gpg.encoding = 'utf-8'
 
 
 def set_current(conf, description=''):
@@ -30,26 +25,64 @@ class Config:
     parser = configparser.ConfigParser(strict=True)
     default_censor_string = '***'
 
-    def __init__(self, config_dir, env_prefix=None, decrypt=True):
-        if not os.path.isdir(config_dir):
-            raise OSError('{} is not a directory'.format(config_dir))
-        self.dir = os.path.realpath(config_dir)
+    def __init__(self, default_dir, env_prefix=None, override_dirs=[]):
+        self.__target_tmpdir = None
+        if default_dir == None:
+            default_dir = override_dirs
+        if isinstance(default_dir, list):
+            self.collect_from_dirs(default_dir)
+        else:
+            self.dirs = [default_dir]
+        if isinstance(override_dirs, str):
+            override_dirs = [override_dirs]
+        elif override_dirs == None:
+            override_dirs = []
+        for d in override_dirs:
+            if not os.path.isdir(d):
+                raise OSError('{} is not a directory'.format(override_dirs))
+            self.dirs.append(os.path.realpath(d))
         self.required = {}
         self.censored = {}
         self.store = {}
-        self.decrypt = decrypt
+        self.decrypt = []
         self.env_prefix = None
+        self.src_dirs = {}
         if env_prefix != None:
             logg.info('using prefix {} for environment variable override matches'.format(env_prefix))
             self.env_prefix = '{}_'.format(env_prefix)
 
 
+    def collect_from_dirs(self, dirs):
+        self.__target_tmpdir = tempfile.TemporaryDirectory()
+        self.dirs = [self.__target_tmpdir.name]
+        for i, d in enumerate(dirs):
+            for filename_in in os.listdir(d):
+                if re.match(r'.+\.ini$', filename_in) == None:
+                    continue
+                filename_out = '{}_{}'.format(i, filename_in)
+                in_filepath = os.path.join(d, filename_in)
+                out_filepath = os.path.join(self.dirs[0], filename_out)
+                fr = open(in_filepath, 'rb')
+                fw = open(out_filepath, 'wb')
+                fw.write(fr.read())
+                fw.close()
+                fr.close()
+                logg.debug('base config {} will be processed as {}'.format(in_filepath, out_filepath))
+#        return target_dir.name
+
+
+    def add_decrypt(self, decrypter):
+        self.decrypt.append(decrypter)
+
+
     def add(self, value, constant_name, exists_ok=False):
-        if self.store.get(constant_name) != None:
+        value_stored = self.store.get(constant_name)
+        if not self.is_as_none(value_stored):
             if not exists_ok:
                 raise AttributeError('config key {} already exists'.format(constant_name))
             else:
-                logg.debug('overwriting key {}'.format(constant_name))
+                if value_stored != value:
+                    logg.debug('updating key {}'.format(constant_name))
         self.store[constant_name] = value
 
 
@@ -110,49 +143,87 @@ class Config:
         self.add(val, cn, exists_ok=True)
 
 
+    def set_dir(self, k, d):
+        logg.debug('set dir {} for key {}'.format(d, k))
+        self.src_dirs[k] = d
+
+
     def process(self, set_as_current=False):
         """Concatenates all .ini files in the config directory attribute and parses them to memory
         """
-        tmp = tempfile.NamedTemporaryFile(delete=False)
-        tmpname = tmp.name
-        for filename in os.listdir(self.dir):
-            if re.match(r'.+\.ini$', filename) == None:
-                logg.debug('skipping file {}'.format(filename))
-                continue
-            logg.info('reading file {}'.format(filename))
-            f = open(os.path.join(self.dir, filename), 'rb')
-            while 1:
-                data = f.read()
-                if not data:
-                    break
-                tmp.write(data)
-            f.close()
-        tmp.close()
-        self.parser.read(tmpname)
-        os.unlink(tmpname)
+        tmp_dir = tempfile.mkdtemp()
+        logg.debug('using tmp processing dir {}'.format(tmp_dir))
+        for i, d in enumerate(self.dirs):
+            d = os.path.realpath(d)
+            if i == 0:
+                d_label = 'default'
+            else:
+                d_label = 'override #' + str(i)
+            tmp_out_dir = os.path.join(tmp_dir, str(i))
+            os.makedirs(tmp_out_dir)
+            logg.debug('processing dir {} ({})'.format(d, d_label))
+            tmp_out = open(os.path.join(tmp_out_dir, 'config.ini'), 'ab')
+            for filename in os.listdir(d):
+                if re.match(r'.+\.ini$', filename) == None:
+                    logg.debug('skipping file {}/{}'.format(d, filename))
+                    continue
+                logg.info('reading file {}/{}'.format(d, filename))
+                f = open(os.path.join(d, filename), 'rb')
+                while 1:
+                    data = f.read()
+                    if not data:
+                        break
+                    tmp_out.write(data)
+                f.close()
+            tmp_out.close()
+        d = os.listdir(tmp_dir)
+        d.sort()
+        c = 0
+
+        # TODO: this will fail of sections/options are repeated. should first use individual parser instances to flatten to single file (perhaps in collect_from_dirs already)
+        for i, tmp_config_dir in enumerate(d):
+            tmp_config_dir = os.path.join(tmp_dir, tmp_config_dir)
+            for tmp_file in os.listdir(os.path.join(tmp_config_dir)):
+                tmp_config_file_path = os.path.join(tmp_config_dir, tmp_file)
+                if c == 0:
+                    logg.debug('apply default parser for config directory {}'.format(self.dirs[i]))
+                    self.parser.read(tmp_config_file_path)
+                    for s in self.parser.sections():
+                        for so in self.parser.options(s):
+                            k = self.to_constant_name(so, s)
+                            v = self.parser.get(s, so)
+                            logg.debug('default config set {}'.format(k))
+                            self.add(v, k, exists_ok=True)
+                            self.set_dir(k, self.dirs[i])
+                else:
+                    logg.debug('apply override parser for config directory {}'.format(self.dirs[i]))
+                    local_parser = configparser.ConfigParser(strict=True)
+                    local_parser.read(tmp_config_file_path)
+                    for s in local_parser.sections():
+                        for so in local_parser.options(s):
+                            k = self.to_constant_name(so, s)
+                            if not self.have(k):
+                                raise KeyError('config overrides in {} defines key {} not present in default config {}'.format(self.dirs[i], k, self.dirs[0]))
+                            v = local_parser.get(s, so)
+                            logg.debug('checking {} {} {}'.format(k, s, so))
+                            if not self.is_as_none(v):
+                                logg.debug('multi config file overrides {}'.format(k))
+                                self.add(v, k, exists_ok=True)
+                                self.set_dir(k, self.dirs[i])
+            c += 1
         self._sections_override(os.environ, 'environment variable')
         if set_as_current:
             set_current(self, description=self.dir)
 
 
-
-    def _decrypt(self, k, v):
-        if type(v).__name__ != 'str':
-            logg.debug('entry {} is not type str'.format(k))
+    def _decrypt(self, k, v, src_dir):
+        if len(self.decrypt) == 0:
             return v
-        if self.decrypt:
-            m = re.match(r'^\!gpg\((.*)\)', v)
-            if m != None:
-                filename = m.group(1)
-                if filename[0] != '/':
-                    filename = os.path.join(self.dir, filename)
-                f = open(filename, 'rb')
-                logg.debug('decrypting entry {} in file {}'.format(k, f))
-                d = gpg.decrypt_file(f)
-                if not d.ok:
-                    raise DecryptError()
-                v = str(d)
-                f.close()
+        for decrypter in self.decrypt:
+            logg.debug('applying decrypt with {}'.format(str(decrypter)))
+            (v, r) = decrypter.decrypt(k, v, src_dir)
+            if r:
+                return v
         return v
 
 
@@ -162,14 +233,37 @@ class Config:
             if default != None:
                 logg.debug('returning default value for empty value {}'.format(k))
             return default
-        if type(v).__name__ == 'str' and v == '':
+        if self.is_as_none(v): 
             if default != None:
                 logg.debug('returning default value for empty string value {}'.format(k))
                 return default
             else:
                 return None
 
-        return self._decrypt(k, v)
+        return self._decrypt(k, v, self.src_dirs.get(k))
+
+
+    def remove(self, k, strict=True):
+        removes = []
+        if strict:
+            removes = [k]
+        else:
+            l = len(k)
+            re_s = r'^' + k
+            for v in self.all():
+                if len(v) >= l and re.match(re_s, v):
+                    removes.append(v)
+        for v in removes:
+            del self.store[v]
+            logg.debug('removing key: {}'.format(v))
+
+
+    def have(self, k):
+        try:
+            v = self.store[k]
+            return True
+        except KeyError:
+            return False
 
 
     def all(self):
@@ -181,7 +275,7 @@ class Config:
         if type(v).__name__ == 'bool':
             logg.debug('entry {} is already bool'.format(k))
             return v
-        d = self._decrypt(k, v)
+        d = self._decrypt(k, v, self.src_dirs.get(k))
         if d.lower() not in ['true', 'false', '0', '1', 'on', 'off']:
             raise ValueError('{} not a boolean value'.format(k))
         return d.lower() in ['true', '1', 'on']
@@ -193,7 +287,6 @@ class Config:
             return self.default_censor_string
         except KeyError:
             return self.store[k]
-
 
 
     def __str__(self):
@@ -209,6 +302,12 @@ class Config:
         return "<Config '{}'>".format(self.dir)
 
 
+    @classmethod
+    def is_as_none(cls, v):
+        if isinstance(v, str) and v == '':
+            return True
+        if v == None:
+            return True
 
 
 def config_from_environment():
