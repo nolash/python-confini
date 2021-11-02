@@ -18,12 +18,14 @@ class ConfigExporterTarget(enum.Enum):
 
 class ConfigExporter:
 
-    def __init__(self, config, target=None, split=False):
+    def __init__(self, config, target=None, split=False, doc=False):
         self.config = config
         self.sections = {}
         self.target_split = split
         self.target_typ = ConfigExporterTarget.HANDLE
         self.target = None
+        self.make_doc = doc
+        self.doc = None
         if isinstance(target, io.IOBase):
             self.target = target
         else:
@@ -36,6 +38,10 @@ class ConfigExporter:
                 d = os.getcwd()
                 self.target = os.path.join(d, target)
 
+        if self.make_doc:
+            from confini.doc import ConfigDoc
+            self.doc = ConfigDoc.from_config(config)
+
 
     def scan(self):
         for k in self.config.all():
@@ -47,12 +53,18 @@ class ConfigExporter:
             self.sections[s][v] = self.config.get(k)
 
 
-    def export_section(self, k, w):
-        s = {}
-        s[k] = self.sections[k]
-        p = configparser.ConfigParser()
-        p.read_dict(s)
-        p.write(w)
+    def export_section(self, ks, w):
+        w.write("[" + ks + "]\n")
+        for ko in self.sections[ks].keys():
+            if self.make_doc:
+                try:
+                    v = self.doc.get(ks, ko)
+                    w.write("# " + v + "\n")
+                except KeyError:
+                    logg.warning('doc missing for section {} option {}'.format(ks, ko))
+                    pass
+            w.write(ko + " = " + self.sections[ks][ko] + "\n")
+        w.write("\n")
 
 
     def export(self):

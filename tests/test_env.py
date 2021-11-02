@@ -1,9 +1,10 @@
-#!/usr/bin/python
-
+# standard imports
 import os
 import unittest
 import logging
 
+# local imports
+from confini.env import ConfigEnvParser
 from confini import Config
 
 logging.basicConfig(level=logging.DEBUG)
@@ -83,6 +84,16 @@ class TestEnv(unittest.TestCase):
             'XYZZY_BERT': 'ernie',
                 }
         self.assertDictEqual(expect, c.store)
+
+
+    def test_env_parser(self):
+        envpath = os.path.join(self.wd, 'files', 'env', 'env.txt')
+        c = ConfigEnvParser()
+        p = c.from_file(envpath)
+        self.assertTrue(p.has_section('foo'))
+        self.assertTrue(p.has_section('bar'))
+        self.assertTrue(p.has_option('foo', 'bar'))
+
 
 if __name__ == '__main__':
     unittest.main()

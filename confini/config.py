@@ -9,6 +9,9 @@ import re
 # external imports
 import gnupg
 
+# local imports
+from confini.common import to_constant_name
+
 logg = logging.getLogger('confini')
 
 current_config = None
@@ -89,7 +92,7 @@ class Config:
     def censor(self, identifier, section=None):
         constant_name = ''
         if section != None:
-            constant_name = Config.to_constant_name(identifier, section)
+            constant_name = to_constant_name(identifier, section)
         else:
             constant_name = identifier
         self.censored[constant_name] = True
@@ -111,15 +114,10 @@ class Config:
         return True
 
 
-    @staticmethod
-    def to_constant_name(directive, section):
-        return '{}_{}'.format(section.upper(), directive.upper())
-
-
     def _sections_override(self, dct, dct_description):
         for s in self.parser.sections():
             for k in self.parser[s]:
-                cn = Config.to_constant_name(k, s)
+                cn = to_constant_name(k, s)
                 self.override(cn, self.parser[s][k], dct, dct_description)
 
 
@@ -190,7 +188,7 @@ class Config:
                     self.parser.read(tmp_config_file_path)
                     for s in self.parser.sections():
                         for so in self.parser.options(s):
-                            k = self.to_constant_name(so, s)
+                            k = to_constant_name(so, s)
                             v = self.parser.get(s, so)
                             logg.debug('default config set {}'.format(k))
                             self.add(v, k, exists_ok=True)
@@ -201,7 +199,7 @@ class Config:
                     local_parser.read(tmp_config_file_path)
                     for s in local_parser.sections():
                         for so in local_parser.options(s):
-                            k = self.to_constant_name(so, s)
+                            k = to_constant_name(so, s)
                             if not self.have(k):
                                 raise KeyError('config overrides in {} defines key {} not present in default config {}'.format(self.dirs[i], k, self.dirs[0]))
                             v = local_parser.get(s, so)
