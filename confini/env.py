@@ -2,6 +2,7 @@
 import configparser
 import io
 import logging
+import sys
 
 logg = logging.getLogger(__name__)
 
@@ -42,3 +43,22 @@ class ConfigEnvParser:
                 self.parser.add_section(ks)
             self.parser.set(ks, ko, v)
         return self.parser
+
+
+def export_env(config, prefix=None, empty_all=False, skip_empty=False, doc=False, w=sys.stdout):
+    for k in config.all():
+        v = config.get(k)
+        if empty_all or v == None:
+            v = ''
+        if v == '' and skip_empty:
+            logg.debug('skipping empty directive {}'.format(k))
+            continue
+        if doc:
+            try:
+                doc_s = config.doc.get(k)
+                w.write('# ' + doc_s + "\n")
+            except KeyError:
+                pass
+        if prefix != None:
+            w.write(prefix + ' ')
+        w.write('{}={}\n'.format(k, v))

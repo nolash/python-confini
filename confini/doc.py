@@ -11,30 +11,37 @@ logg = logging.getLogger(__name__)
 
 class ConfigDoc:
 
-    def __init__(self, src):
-        fp = os.path.join(src, '.confini')
-        logg.debug('attempting doc parser with src {}'.format(fp))
+    def __init__(self, src=None):
+        fp = None
+        if src != None:
+            fp = os.path.join(src, '.confini')
+            logg.debug('attempting doc parser with src {}'.format(fp))
 
         self.src = fp
         self.docs = {}
         self.docs_flat = {}
 
+        if self.src != None:
+            self.process(self.src)
+           
+
+    def process(self, src):
         try:
-            self.process_as_ini()
+            self.process_as_ini(src)
         except Exception:
-            self.process_as_env()
+            self.process_as_env(src)
 
 
-    def process_as_ini(self):
+    def process_as_ini(self, src):
         p = configparser.ConfigParser()
-        p.read_file(self.src)
+        p.read_file(src)
         return self.process_parser(p)
 
 
-    def process_as_env(self):
+    def process_as_env(self, src):
         from confini.env import ConfigEnvParser
         c = ConfigEnvParser()
-        p = c.from_file(self.src)
+        p = c.from_file(src)
         return self.process_parser(p)
 
 
@@ -56,7 +63,13 @@ class ConfigDoc:
         else:
             return self.docs[k][o]
 
+    
+    def all(self):
+        return list(self.docs_flat.keys())
+
 
     @staticmethod
     def from_config(config):
+        if config.doc != None:
+            return config.doc
         return ConfigDoc(config.dirs[0])

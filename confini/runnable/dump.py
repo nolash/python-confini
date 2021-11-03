@@ -8,6 +8,8 @@ import stat
 
 # local imports
 from confini import Config
+from confini.env import export_env
+from confini.export import ConfigExporter
 
 logging.basicConfig(level=logging.WARNING)
 logg = logging.getLogger()
@@ -20,6 +22,8 @@ argparser.add_argument('--prefix', type=str, help='Prefix every line with given 
 argparser.add_argument('--skip-empty', action='store_true', dest='skip_empty', help='Skip defined directives that are missing a value')
 argparser.add_argument('--schema-dir', dest='schema_dir', action='append', type=str, help='Configuation directory to merge with schema definitions')
 argparser.add_argument('--schema-module', dest='schema_module', action='append', type=str, default=[], help='Module path to merge with schema definitions')
+argparser.add_argument('--ini', action='store_true', help='Output as ini file')
+argparser.add_argument('--doc', action='store_true', help='Add matching documentation strings to output')
 argparser.add_argument('config_dir', nargs='*', type=str, help='Configuation directories to parse')
 args = argparser.parse_args()
 
@@ -53,16 +57,24 @@ def main():
 
     c = Config(schema_dirs, override_dirs=args.config_dir)
     c.process()
-    for k in c.store.keys():
-        v = c.get(k)
-        if args.z or v == None:
-            v = ''
-        if v == '' and args.skip_empty:
-            logg.debug('skipping empty directive {}'.format(k))
-            continue
-        if args.prefix != None:
-            sys.stdout.write(args.prefix + ' ')
-        sys.stdout.write('{}={}\n'.format(k, v))
+    
+    if args.ini:
+        e = ConfigExporter(c, doc=args.doc)
+        e.export()
+    else:
+        export_env(c, prefix=args.prefix, empty_all=args.z, skip_empty=args.skip_empty, doc=args.doc)
+
+
+#    for k in c.store.keys():
+#        v = c.get(k)
+#        if args.z or v == None:
+#            v = ''
+#        if v == '' and args.skip_empty:
+#            logg.debug('skipping empty directive {}'.format(k))
+#            continue
+#        if args.prefix != None:
+#            sys.stdout.write(args.prefix + ' ')
+#        sys.stdout.write('{}={}\n'.format(k, v))
 
 
 if __name__ == "__main__":

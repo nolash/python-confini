@@ -27,7 +27,7 @@ class Config:
 
     default_censor_string = '***'
 
-    def __init__(self, default_dir, env_prefix=None, override_dirs=[]):
+    def __init__(self, default_dir, env_prefix=None, override_dirs=[], skip_doc=False):
         self.parser = configparser.ConfigParser(strict=True)
         self.__target_tmpdir = None
         if default_dir == None:
@@ -44,6 +44,8 @@ class Config:
             if not os.path.isdir(d):
                 raise OSError('{} is not a directory'.format(override_dirs))
             self.dirs.append(os.path.realpath(d))
+        self.skip_doc = skip_doc
+        self.doc = None
         self.required = {}
         self.censored = {}
         self.store = {}
@@ -60,9 +62,13 @@ class Config:
         self.dirs = [self.__target_tmpdir.name]
         for i, d in enumerate(dirs):
             for filename_in in os.listdir(d):
-                if re.match(r'.+\.ini$', filename_in) == None:
+                filename_out = None
+                if filename_in == '.confini':
+                    filename_out = filename_in
+                elif re.match(r'.+\.ini$', filename_in) == None:
                     continue
-                filename_out = '{}_{}'.format(i, filename_in)
+                else:
+                    filename_out = '{}_{}'.format(i, filename_in)
                 in_filepath = os.path.join(d, filename_in)
                 out_filepath = os.path.join(self.dirs[0], filename_out)
                 fr = open(in_filepath, 'rb')
@@ -114,7 +120,7 @@ class Config:
         return True
 
 
-    def _sections_override(self, dct, dct_description):
+    def __sections_override(self, dct, dct_description):
         for s in self.parser.sections():
             for k in self.parser[s]:
                 cn = to_constant_name(k, s)
@@ -146,18 +152,27 @@ class Config:
         self.src_dirs[k] = d
 
 
-    def process(self, set_as_current=False):
-        """Concatenates all .ini files in the config directory attribute and parses them to memory
-        """
-        tmp_dir = tempfile.mkdtemp()
-        logg.debug('using tmp processing dir {}'.format(tmp_dir))
+    def __process_doc_(self, d):
+        if self.skip_doc:
+            return
+        doc_fp = os.path.join(d, '.confini')
+        if self.doc == None:
+            from confini.doc import ConfigDoc
+            self.doc = ConfigDoc()
+        try:
+            self.doc.process(doc_fp)
+        except FileNotFoundError:
+            pass
+
+
+    def __collect_dir(self, out_dir):
         for i, d in enumerate(self.dirs):
             d = os.path.realpath(d)
             if i == 0:
                 d_label = 'default'
             else:
                 d_label = 'override #' + str(i)
-            tmp_out_dir = os.path.join(tmp_dir, str(i))
+            tmp_out_dir = os.path.join(out_dir, str(i))
             os.makedirs(tmp_out_dir)
             logg.debug('processing dir {} ({})'.format(d, d_label))
             tmp_out = open(os.path.join(tmp_out_dir, 'config.ini'), 'ab')
@@ -174,13 +189,18 @@ class Config:
                     tmp_out.write(data)
                 f.close()
             tmp_out.close()
-        d = os.listdir(tmp_dir)
+
+            self.__process_doc_(d)
+
+    
+    def __process_schema_dir(self, in_dir):
+        d = os.listdir(in_dir)
         d.sort()
         c = 0
 
         # TODO: this will fail of sections/options are repeated. should first use individual parser instances to flatten to single file (perhaps in collect_from_dirs already)
         for i, tmp_config_dir in enumerate(d):
-            tmp_config_dir = os.path.join(tmp_dir, tmp_config_dir)
+            tmp_config_dir = os.path.join(in_dir, tmp_config_dir)
             for tmp_file in os.listdir(os.path.join(tmp_config_dir)):
                 tmp_config_file_path = os.path.join(tmp_config_dir, tmp_file)
                 if c == 0:
@@ -209,7 +229,20 @@ class Config:
                                 self.add(v, k, exists_ok=True)
                                 self.set_dir(k, self.dirs[i])
             c += 1
-        self._sections_override(os.environ, 'environment variable')
+
+
+    def process(self, set_as_current=False):
+        """Concatenates all .ini files in the config directory attribute and parses them to memory
+        """
+        tmp_dir = tempfile.mkdtemp()
+        logg.debug('using tmp processing dir {}'.format(tmp_dir))
+       
+        self.__collect_dir(tmp_dir)
+
+        self.__process_schema_dir(tmp_dir)
+
+        self.__sections_override(os.environ, 'environment variable')
+
         if set_as_current:
             set_current(self, description=self.dir)
 

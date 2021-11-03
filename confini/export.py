@@ -1,4 +1,4 @@
-# import 
+# standard imports
 import sys
 import configparser
 import os
@@ -26,7 +26,9 @@ class ConfigExporter:
         self.target = None
         self.make_doc = doc
         self.doc = None
-        if isinstance(target, io.IOBase):
+        if target == None:
+            self.target = sys.stdout
+        elif isinstance(target, io.IOBase):
             self.target = target
         else:
             st = os.stat(target)
@@ -40,7 +42,14 @@ class ConfigExporter:
 
         if self.make_doc:
             from confini.doc import ConfigDoc
-            self.doc = ConfigDoc.from_config(config)
+            if isinstance(doc, ConfigDoc):
+                self.doc = doc
+            else:
+                try:
+                    self.doc = ConfigDoc.from_config(config)
+                except FileNotFoundError as e:
+                    logg.warning('doc set but no doc file found: {}'.format(e))
+                    self.make_doc = False
 
 
     def scan(self):
