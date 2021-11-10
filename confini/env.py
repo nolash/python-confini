@@ -47,6 +47,8 @@ class ConfigEnvParser:
 
 def export_env(config, prefix=None, empty_all=False, skip_empty=False, doc=False, w=sys.stdout):
     for k in config.all():
+        if k[0] == '_':
+            continue
         v = config.get(k)
         if empty_all or v == None:
             v = ''

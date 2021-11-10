@@ -65,17 +65,5 @@ def main():
         export_env(c, prefix=args.prefix, empty_all=args.z, skip_empty=args.skip_empty, doc=args.doc)
 
 
-#    for k in c.store.keys():
-#        v = c.get(k)
-#        if args.z or v == None:
-#            v = ''
-#        if v == '' and args.skip_empty:
-#            logg.debug('skipping empty directive {}'.format(k))
-#            continue
-#        if args.prefix != None:
-#            sys.stdout.write(args.prefix + ' ')
-#        sys.stdout.write('{}={}\n'.format(k, v))
-
-
 if __name__ == "__main__":
     main()

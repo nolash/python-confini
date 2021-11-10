@@ -55,6 +55,8 @@ class ConfigExporter:
     def scan(self):
         for k in self.config.all():
             (s, v) = k.split('_', maxsplit=1)
+            if s == '':
+                continue
             s = s.lower()
             v = v.lower()
             if self.sections.get(s) == None:
@@ -80,18 +82,28 @@ class ConfigExporter:
                 except KeyError:
                     logg.warning('doc missing for section {} option {}'.format(ks, ko))
                     pass
-            w.write(ko + " = " + self.sections[ks][ko] + "\n")
+            v = self.sections[ks][ko]
+            if v == None:
+                v = ''
+            w.write('{} = {}\n'.format(ko, v))
         w.write("\n")
 
 
-    def export(self):
+    def export(self, exclude_sections=[]):
         self.scan()
 
         w = None
         if self.target_typ == ConfigExporterTarget.HANDLE:
             w = self.target
 
+        for i in range(len(exclude_sections)):
+            exclude_sections[i] = exclude_sections[i].lower()
+
         for k in self.sections:
+            if k in exclude_sections:
+                logg.debug('explicit skip section {} in export'.format(k))
+                continue
+
             if w != None:
                 self.export_section(k, w)
                 continue
