@@ -307,6 +307,8 @@ class Config:
             logg.debug('entry {} is already bool'.format(k))
             return v
         d = self._decrypt(k, v, self.src_dirs.get(k))
+        if d == None:
+            return False
         if d.lower() not in ['true', 'false', '0', '1', 'on', 'off']:
             raise ValueError('{} not a boolean value'.format(k))
         return d.lower() in ['true', '1', 'on']
