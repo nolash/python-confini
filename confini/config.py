@@ -57,6 +57,12 @@ class Config:
             self.env_prefix = '{}_'.format(env_prefix)
 
 
+    def __clean(self):
+        if self.__target_tmpdir != None:
+            logg.debug('cleaning collection tmpdir {}'.format(self.__target_tmpdir.name))
+            self.__target_tmpdir.cleanup() 
+
+
     def collect_from_dirs(self, dirs):
         self.__target_tmpdir = tempfile.TemporaryDirectory()
         self.dirs = [self.__target_tmpdir.name]
@@ -192,7 +198,7 @@ class Config:
 
             self.__process_doc_(d)
 
-    
+
     def __process_schema_dir(self, in_dir):
         d = os.listdir(in_dir)
         d.sort()
@@ -245,6 +251,8 @@ class Config:
 
         if set_as_current:
             set_current(self, description=self.dir)
+
+        self.__clean()
 
 
     def _decrypt(self, k, v, src_dir):
