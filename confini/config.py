@@ -312,7 +312,6 @@ class Config:
     def true(self, k):
         v = self.store.get(k)
         if type(v).__name__ == 'bool':
-            logg.debug('entry {} is already bool'.format(k))
             return v
         d = self._decrypt(k, v, self.src_dirs.get(k))
         if d == None:
