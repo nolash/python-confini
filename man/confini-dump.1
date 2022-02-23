@@ -1,0 +1,80 @@
+.TH confini-dump 1 Apply and output configurations
+
+.SH NAME
+confini-dump \- Apply and output configurations
+
+.SH SYNOPSIS
+.P
+\fBconfini-dump\fP [ --ini ] [ --schema-dir ] [ \fIconfig_dir\fP ... ]
+
+
+.SH DESCRIPTION
+
+The \fBconfini-dump\fP tool uses the confini module to read configuration schemas and files, and adjust the configuration settings from environment the environment. Its main use is as a tool for debugging actual configuration settings for libraries or tools that use the confini library.
+
+By default configuration settings are output as an environment variable assignments file (e.g. importable into a current bash shell using the \fBsource\fP command). By specifying \fB--ini\fP ini configuration files may be output instead.
+
+If schemas are specified with \fB--schema-dir\fP or \fB--schema-module\fP, the contents of each \fIconfig_dir\fP must match the given schemas. See \fBCONFIGURATION SCHEMAS\fP below.
+
+
+.SS OPTIONS
+
+.TP
+\fB--ini\fP
+Output configuration as an ini file instead of environment variable key/value pairs.
+
+.TP
+\fB--doc\fP \fIdoc-key\fP
+Only match configuration keys exactly matching \fIdoc_key\fP. May be specified multiple times to match multiple keys. If not set, all configuration settings will be output.
+
+.TP
+\fB--prefix\fP \fIprefix_string\fP
+Prefix all output lines with the given string. No effect if \fB--ini\fP is set.
+
+.TP
+\fB--schema-dir\fP
+Merge configurations from schema_dir into the current configuration schema. May be specified several times. Complements \fB--schema-module\fP.
+
+.TP
+\fB--schema-module\fP
+Merge configurations from the filesystem directory the given python module resolves to. For example, if the module \fBfoo.bar\fP is in explicit include path \fB/tmp/pythonpath\fP (e.g. set by \fBPYTHONPATH\fP), the resulting path will be \fB/tmp/pythonpath/foo/bar/\fP.
+
+.TP
+\fB--skip-empty\fP
+Omit configuration settings that have empty values after applying environment.
+
+.TP
+\fB-v\fP
+Sends verbose logging output to stderr. If not set, only \fBWARNING\fP level logs will be sent.
+
+.TP
+\fB-z\fP
+Remove all values in output.
+
+
+.SH CONFIGURATION SCHEMAS
+
+Configuration schemas define the configuration keys that are valid for a specific context.
+
+If run without the \fB--schema-dir\fP and/or \fB--schema-module\fP options, no schema constraints will be applied. Or rather, the schema will be the merge of all the configurations read from all \fIconfig_dir\fP positional arguments.
+
+If \fB--schema-dir\fP and/or \fB--schema-module\fP are defined, all configurations from the locations specified in these switches will be read. A schema is them created from the merged configurations. Thereafter, configurations from the \fIconfig_dir\fP positional arguments are read. If any of the configuration keys do not match the schema, an error will occur.
+
+Regardless of schemas, two different configuration file locations may not define the same configuration sections.
+
+
+.SH LICENSE
+
+This documentation and its source is licensed under the Creative Commons Attribution-Sharealike 4.0 International license.
+
+The source code of the tool this documentation describes is licensed under the GNU General Public License 3.0.
+
+
+.SH COPYRIGHT
+
+Louis Holbrook <dev@holbrook.no> (https://holbrook.no)
+PGP: 59A844A484AC11253D3A3E9DCDCBD24DD1D0E001
+
+.SH SOURCE CODE
+
+https://git.defalsify.org
