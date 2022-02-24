@@ -126,27 +126,29 @@ class Config:
         return True
 
 
-    def __sections_override(self, dct, dct_description):
+    def __sections_override(self, dct, dct_description, allow_empty=False):
         for s in self.parser.sections():
             for k in self.parser[s]:
                 cn = to_constant_name(k, s)
-                self.override(cn, self.parser[s][k], dct, dct_description)
+                self.override(cn, self.parser[s][k], dct, dct_description, allow_empty=True)
 
 
-    def dict_override(self, dct, dct_description):
+    def dict_override(self, dct, dct_description, allow_empty=False):
         for k in dct.keys():
             try:
-                self.override(k, self.store[k], dct, dct_description)
+                self.override(k, self.store[k], dct, dct_description, allow_empty=allow_empty)
             except KeyError:
                 logg.warning('override key {} have no match in config store'.format(k))
 
 
-    def override(self, cn, v, dct, dct_description):
+    def override(self, cn, v, dct, dct_description, allow_empty=False):
         cn_env = cn
         if self.env_prefix != None:
             cn_env = self.env_prefix + cn
         val = dct.get(cn_env)
-        if val == None or val == '':
+        if val == None:
+            val = self.store.get(cn, v)
+        elif val == '' and not allow_empty:
             val = self.store.get(cn, v)
         else:
             logg.info('{} {} overrides {}'.format(dct_description, cn_env, cn))
@@ -247,7 +249,7 @@ class Config:
 
         self.__process_schema_dir(tmp_dir)
 
-        self.__sections_override(os.environ, 'environment variable')
+        self.__sections_override(os.environ, 'environment variable', allow_empty=True)
 
         if set_as_current:
             set_current(self, description=self.dir)
