@@ -78,13 +78,24 @@ class TestEnv(unittest.TestCase):
         c = Config(inidir, env_prefix='ZZZ')
         c.process()
         expect = {
-            'FOO_BAR': '42',
+            'FOO_BAR': '',
             'FOO_BAZ': '029a',
             'BAR_FOO': 'oof',
             'XYZZY_BERT': 'ernie',
                 }
         self.assertDictEqual(expect, c.store)
 
+        del os.environ['ZZZ_FOO_BAR']
+        inidir = os.path.join(self.wd, 'files')
+        c = Config(inidir, env_prefix='ZZZ')
+        c.process()
+        expect = {
+            'FOO_BAR': '42',
+            'FOO_BAZ': '029a',
+            'BAR_FOO': 'oof',
+            'XYZZY_BERT': 'ernie',
+                }
+        self.assertDictEqual(expect, c.store)
 
     def test_env_parser(self):
         envpath = os.path.join(self.wd, 'files', 'env', 'env.txt')

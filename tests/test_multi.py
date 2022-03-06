@@ -37,6 +37,17 @@ class TestBasic(unittest.TestCase):
         self.assertEqual(r, 'three')
 
 
+    def test_parse_two_one_undef(self):
+        inidir_one = os.path.join(self.wd, 'files', 'multi', 'one')
+        inidir_two = os.path.join(self.wd, 'files', 'multi', 'four')
+        c = Config(inidir_one, override_dirs=[inidir_two])
+        c.process()
+        r = c.get('FOO_BAH')
+        self.assertEqual(r, '123')
+        r = c.get('FOO_BAZ')
+        self.assertEqual(r, '42')
+
+
     def test_parse_two_schema_error(self):
         inidir_one = os.path.join(self.wd, 'files', 'multi', 'one')
         inidir_two = os.path.join(self.wd, 'files', 'multi', 'three')

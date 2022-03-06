@@ -1,3 +1,5 @@
+0.6.0
+	- Empty entries in override config dirs now empties value in directive (was previously skipped)
 0.5.7
 	- Overwrite config with empty but defined environment variables
 0.5.6

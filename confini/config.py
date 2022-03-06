@@ -201,7 +201,7 @@ class Config:
             self.__process_doc_(d)
 
 
-    def __process_schema_dir(self, in_dir):
+    def __process_schema_dir(self, in_dir, allow_empty=False):
         d = os.listdir(in_dir)
         d.sort()
         c = 0
@@ -232,7 +232,7 @@ class Config:
                                 raise KeyError('config overrides in {} defines key {} not present in default config {}'.format(self.dirs[i], k, self.dirs[0]))
                             v = local_parser.get(s, so)
                             logg.debug('checking {} {} {}'.format(k, s, so))
-                            if not self.is_as_none(v):
+                            if allow_empty or not self.is_as_none(v):
                                 logg.debug('multi config file overrides {}'.format(k))
                                 self.add(v, k, exists_ok=True)
                                 self.set_dir(k, self.dirs[i])
@@ -247,7 +247,7 @@ class Config:
        
         self.__collect_dir(tmp_dir)
 
-        self.__process_schema_dir(tmp_dir)
+        self.__process_schema_dir(tmp_dir, allow_empty=True)
 
         self.__sections_override(os.environ, 'environment variable', allow_empty=True)
 
