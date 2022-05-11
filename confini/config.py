@@ -62,6 +62,10 @@ class Config:
             self.dirs.append(d)
 
 
+    def set_env_prefix(self, v):
+        self.env_prefix = v
+
+
     def add_override_dir(self, v):
         if not os.path.isdir(v):
             raise OSError('{} is not a directory'.format(v))
@@ -300,7 +304,6 @@ class Config:
             else:
                 return None
 
-        #return self._decrypt(k, v, self.src_dirs.get(k))
         return self._decrypt(k, v)
 
 
