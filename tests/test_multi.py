@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+# standard imports
 import os
 import unittest
 import logging
@@ -54,8 +53,20 @@ class TestBasic(unittest.TestCase):
         c = Config(inidir_one, override_dirs=[inidir_two])
         with self.assertRaises(KeyError):
             c.process()
-        
-        
+       
+
+    def test_multi_schema(self):
+        inidir_one = os.path.join(self.wd, 'files', 'multi_schema', 'foo')
+        inidir_two = os.path.join(self.wd, 'files', 'multi_schema', 'bar')
+        c = Config(inidir_one)
+        c.add_schema_dir(inidir_two)
+        c.process()
+        r = c.get('FOO_BAZ')
+        self.assertEqual(r, '42')
+        r = c.get('XYZZY_SNUH')
+        self.assertEqual(r, '13')
+
+   
 
 if __name__ == '__main__':
     unittest.main()
