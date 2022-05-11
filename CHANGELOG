@@ -1,3 +1,6 @@
+0.6.1
+	- Make schema and override dirs settable after instantiation
+	- Remove forced source dir for pgp key bundles
 0.6.0
 	- Empty entries in override config dirs now empties value in directive (was previously skipped)
 0.5.7

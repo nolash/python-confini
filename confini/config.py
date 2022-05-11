@@ -29,21 +29,6 @@ class Config:
 
     def __init__(self, default_dir, env_prefix=None, override_dirs=[], skip_doc=False):
         self.parser = configparser.ConfigParser(strict=True)
-        self.__target_tmpdir = None
-        if default_dir == None:
-            default_dir = override_dirs
-        if isinstance(default_dir, list):
-            self.collect_from_dirs(default_dir)
-        else:
-            self.dirs = [default_dir]
-        if isinstance(override_dirs, str):
-            override_dirs = [override_dirs]
-        elif override_dirs == None:
-            override_dirs = []
-        for d in override_dirs:
-            if not os.path.isdir(d):
-                raise OSError('{} is not a directory'.format(override_dirs))
-            self.dirs.append(os.path.realpath(d))
         self.skip_doc = skip_doc
         self.doc = None
         self.required = {}
@@ -52,9 +37,41 @@ class Config:
         self.decrypt = []
         self.env_prefix = None
         self.src_dirs = {}
+        self.__override_dirs = []
+        self.__schema_dirs = []
+        self.__processed = False
+        self.dirs = []
+
         if env_prefix != None:
             logg.info('using prefix {} for environment variable override matches'.format(env_prefix))
             self.env_prefix = '{}_'.format(env_prefix)
+
+        self.add_schema_dir(default_dir)
+
+        self.__target_tmpdir = None
+
+        if isinstance(override_dirs, str):
+            override_dirs = [override_dirs]
+        for d in override_dirs:
+            self.add_override_dir(d)
+
+
+    def __collect(self):
+        self.collect_from_dirs(self.__schema_dirs)
+        for d in self.__override_dirs:
+            self.dirs.append(d)
+
+
+    def add_override_dir(self, v):
+        if not os.path.isdir(v):
+            raise OSError('{} is not a directory'.format(v))
+        self.__override_dirs.append(v)
+
+
+    def add_schema_dir(self, v):
+        if not os.path.isdir(v):
+            raise OSError('{} is not a directory'.format(v))
+        self.__schema_dirs.append(v)
 
 
     def __clean(self):
@@ -242,9 +259,11 @@ class Config:
     def process(self, set_as_current=False):
         """Concatenates all .ini files in the config directory attribute and parses them to memory
         """
+        self.__collect()
+
         tmp_dir = tempfile.mkdtemp()
         logg.debug('using tmp processing dir {}'.format(tmp_dir))
-       
+      
         self.__collect_dir(tmp_dir)
 
         self.__process_schema_dir(tmp_dir, allow_empty=True)
@@ -257,12 +276,12 @@ class Config:
         self.__clean()
 
 
-    def _decrypt(self, k, v, src_dir):
+    def _decrypt(self, k, v):
         if len(self.decrypt) == 0:
             return v
         for decrypter in self.decrypt:
             logg.debug('applying decrypt with {}'.format(str(decrypter)))
-            (v, r) = decrypter.decrypt(k, v, src_dir)
+            (v, r) = decrypter.decrypt(k, v)
             if r:
                 return v
         return v
@@ -281,7 +300,8 @@ class Config:
             else:
                 return None
 
-        return self._decrypt(k, v, self.src_dirs.get(k))
+        #return self._decrypt(k, v, self.src_dirs.get(k))
+        return self._decrypt(k, v)
 
 
     def remove(self, k, strict=True):
@@ -315,7 +335,7 @@ class Config:
         v = self.store.get(k)
         if type(v).__name__ == 'bool':
             return v
-        d = self._decrypt(k, v, self.src_dirs.get(k))
+        d = self._decrypt(k, v) #, self.src_dirs.get(k))
         if d == None:
             return False
         if d.lower() not in ['true', 'false', '0', '1', 'on', 'off']:

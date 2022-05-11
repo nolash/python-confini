@@ -26,8 +26,9 @@ class TestBasic(unittest.TestCase):
 
     def test_enc(self):
         inidir = os.path.join(self.wd, 'files/crypt')
+        logg.debug('inidir {}'.format(inidir))
         c = Config(inidir)
-        decrypter = PGPDecrypter()
+        decrypter = PGPDecrypter(base_dir=inidir)
         c.add_decrypt(decrypter)
         c.process()
         with self.assertRaises(DecryptError):
