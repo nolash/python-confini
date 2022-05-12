@@ -104,7 +104,6 @@ class Config:
                 fw.close()
                 fr.close()
                 logg.debug('base config {} will be processed as {}'.format(in_filepath, out_filepath))
-#        return target_dir.name
 
 
     def add_decrypt(self, decrypter):
