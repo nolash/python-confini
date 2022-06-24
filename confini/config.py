@@ -46,7 +46,10 @@ class Config:
             logg.info('using prefix {} for environment variable override matches'.format(env_prefix))
             self.env_prefix = '{}_'.format(env_prefix)
 
-        self.add_schema_dir(default_dir)
+        if isinstance(default_dir, str):
+            default_dir = [default_dir]
+        for v in default_dir:
+            self.add_schema_dir(v)
 
         self.__target_tmpdir = None
 
