@@ -1,3 +1,7 @@
+0.6.3
+	- Avoid crash when None value of override dirs in instantiation
+0.6.2
+	- Allow schema dir input as list
 0.6.1
 	- Make schema and override dirs settable after instantiation
 	- Remove forced source dir for pgp key bundles

@@ -55,6 +55,8 @@ class Config:
 
         if isinstance(override_dirs, str):
             override_dirs = [override_dirs]
+        elif override_dirs == None:
+            override_dirs = []
         for d in override_dirs:
             self.add_override_dir(d)
 
