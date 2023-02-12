@@ -1,3 +1,5 @@
+0.6.4
+	- Downgrade logging of irrelevant logline for config tmp file read
 0.6.3
 	- Avoid crash when None value of override dirs in instantiation
 0.6.2

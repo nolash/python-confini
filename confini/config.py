@@ -213,7 +213,7 @@ class Config:
                 if re.match(r'.+\.ini$', filename) == None:
                     logg.debug('skipping file {}/{}'.format(d, filename))
                     continue
-                logg.info('reading file {}/{}'.format(d, filename))
+                logg.debug('reading file {}/{}'.format(d, filename))
                 f = open(os.path.join(d, filename), 'rb')
                 while 1:
                     data = f.read()
