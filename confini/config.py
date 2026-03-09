@@ -123,7 +123,10 @@ class Config:
             else:
                 if value_stored != value:
                     logg.debug('updating key {}'.format(constant_name))
+                else:
+                    return None
         self.store[constant_name] = value
+        return value
 
 
     def censor(self, identifier, section=None):
